@@ -257,6 +257,11 @@ impl<'a> FragmentRenderer<'a> {
             bail!("fail to run latex: {error_message}",);
         }
 
+        if self.config.mode == "dvi" {
+            let _cst_command = Command::new("dvipdfm")
+                .args([&pdf_path]).current_dir(&working_path).output()?;
+        }
+
         let mut dvisvgm_command = Command::new(self.config.dvisvgm);
         if self.config.mode == "pdf" {
             dvisvgm_command.arg("--pdf");
@@ -407,17 +412,10 @@ impl<'a> FragmentRenderer<'a> {
                     y_range.0 * TEX2SVG_SCALING + y_base,
                     y_range.1 * TEX2SVG_SCALING + y_base,
                 );
-                x_range = svg_utils::x_range_for_y_range(
-                    &bboxes[svg_idx],
-                    y_range.0,
-                    y_range.1,
-                    self.config.y_range_tol,
-                    self.config.x_range_margin,
-                )
-                .unwrap_or((
+                x_range = (
                     x_range.0 * TEX2SVG_SCALING + x_base,
                     x_range.1 * TEX2SVG_SCALING + x_base,
-                ));
+                );
                 baseline = baseline * TEX2SVG_SCALING + y_base;
 
                 if let FragmentType::DisplayMath | FragmentType::RawBlock = item.ty {

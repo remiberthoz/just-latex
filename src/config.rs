@@ -114,7 +114,7 @@ impl Config {
             .set_default("output_folder", Option::<String>::None)?
             // Default templates...
             .set_default("template.placeholder", placeholder)?
-            .set_default("template.inline_math", format!(r"\({}\)", placeholder))?
+            .set_default("template.inline_math", format!(r"\begin{{displaymath}}{}\end{{displaymath}}", placeholder))?
             .set_default("template.inline_math_inner", placeholder)?
             .set_default("template.inline_quote", placeholder)?
             .set_default("template.emph", placeholder)?
@@ -125,7 +125,7 @@ impl Config {
                 .map(|pt| format!(r"\text{{\fontsize{{{}pt}}{{0}}\selectfont${}$}}", pt, placeholder))
                 .to_vec()
             )?
-            .set_default("template.display_math", format!("\\[\n    {}\n\\]", placeholder))?
+            .set_default("template.display_math", format!(r"\begin{{displaymath}}{}\end{{displaymath}}", placeholder))?
             .set_default("optimizer.enabled", false)?
             .set_default("optimizer.eps", 0.001)?;
 

@@ -163,50 +163,16 @@ fn patch_font(font: &[u8], family: &str) -> Result<Vec<u8>> {
     Ok(result)
 }
 
-/// Given a slice of bounding boxes and a y range, compute the x range that exactly covers all
-/// bounding boxes which have non-empty intersection with the y range. There is a tolerance term
-/// for robustness, because dvisvgm and synctex aren't always very accurate.
-pub fn x_range_for_y_range(
-    bboxes: &[PathBbox],
-    y_min: f64,
-    y_max: f64,
-    tol: f64,
-    margin: f64,
-) -> Option<(f64, f64)> {
-    let mut x_min = f64::MAX;
-    let mut x_max = f64::MIN;
-    let y_min = y_min - tol;
-    let y_max = y_max + tol;
-    for bbox in bboxes {
-        if y_min.max(bbox.top()) <= y_max.min(bbox.bottom()) {
-            x_min = x_min.min(bbox.left());
-            x_max = x_max.max(bbox.right());
-        }
-    }
-    if x_min == f64::MAX {
-        None
-    } else {
-        Some((x_min - margin, x_max + margin))
-    }
-}
-
 // TODO: perhaps merge the function below with the function above, to save one full traversal of
 // bboxes.
 pub fn refine_y_range(bboxes: &[PathBbox], y_min: f64, y_max: f64, tol: f64) -> (f64, f64) {
-    let mut new_y_min = f64::MAX;
-    let mut new_y_max = f64::MIN;
-    let y_min = y_min - tol;
-    let y_max = y_max + tol;
+    let mut new_y_min = y_min - tol;
+    let mut new_y_max = y_max + tol;
     for bbox in bboxes {
-        // if y_min <= bbox.top() && bbox.bottom() <= y_max {
-        if y_min.max(bbox.top()) <= y_max.min(bbox.bottom()) {
+        if bbox.top() >= y_min && bbox.bottom() <= y_max {
             new_y_min = new_y_min.min(bbox.top());
             new_y_max = new_y_max.max(bbox.bottom());
         }
     }
-    if new_y_min == f64::MAX {
-        (y_min + tol, y_max - tol)
-    } else {
-        (new_y_min, new_y_max)
-    }
+    (new_y_min, new_y_max)
 }
